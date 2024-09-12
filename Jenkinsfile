@@ -11,4 +11,19 @@ pipeline {
             }
         }
     }
+
+    post {
+        always {
+            echo "I will always say hello again"
+        }
+        success {
+            echo "yeay, success"
+        }
+        failure {
+            echo "Oh no, failure"
+        }
+        cleanup {
+            echo "Don't care success or error"
+        }
+    }
 }
