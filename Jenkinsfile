@@ -5,6 +5,12 @@ pipeline {
         }
     }
 
+     environment {
+        // BUILD_NUMBER_ENV = "${env.BUILD_NUMBER}"
+        TEXT_SUCCESS_BUILD = "[#${env.BUILD_NUMBER}] Project Name : ${JOB_NAME} is Success"
+        TEXT_FAILURE_BUILD = "[#${env.BUILD_NUMBER}] Project Name : ${JOB_NAME} is Failure"
+    }
+
     stages {
         stage ("Build") {
             steps {
