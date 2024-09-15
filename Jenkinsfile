@@ -6,7 +6,6 @@ pipeline {
     }
 
     environment {
-        // BUILD_NUMBER_ENV = "${env.BUILD_NUMBER}"
         TEXT_SUCCESS_BUILD = "[#${env.BUILD_NUMBER}] Project Name : ${JOB_NAME} is Success"
         TEXT_FAILURE_BUILD = "[#${env.BUILD_NUMBER}] Project Name : ${JOB_NAME} is Failure"
     }
@@ -33,7 +32,7 @@ pipeline {
                         'firstName': 'Lukman',
                         'lastName': 'Nur Hakim'
                     ]
-                    writeJSON('file': 'data.json', json: data)
+                    writeJSON(file: 'data.json', json: data)
                 }
 
                 echo('Hello Test')
@@ -84,9 +83,4 @@ def sendTelegramMessage(String message) {
 
         sh(script: curlCommand, returnStatus: true)
     }
-}
-        cleanup {
-            echo "Don't care success or error"
-        }
-
 }
