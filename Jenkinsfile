@@ -14,11 +14,16 @@ pipeline {
     stages {
 
         stage('Prepare') {
+            environment {
+                APP =  credentials("lukman_rahasia")
+            }
             steps {
                 echo("Author : ${AUTHOR}")
                 echo( "Start Job : ${env.JOB_NAME}")
                 echo( "Start Build : ${env.BUILD_NUMBER}")
                 echo( "Branch Name : ${env.BRANCH_NAME}")
+                echo( "APP Username : ${APP_USR}")
+                echo( "APP Password : ${APP_PSW}")
             }
         }
 
