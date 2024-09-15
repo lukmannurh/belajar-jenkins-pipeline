@@ -11,6 +11,11 @@ pipeline {
         TEXT_FAILURE_BUILD = "[#${env.BUILD_NUMBER}] Project Name : ${JOB_NAME} is Failure"
     }
 
+    options {
+        disableConcurrentBuilds()
+        timeout(time: 10, unit : 'MINUTES')
+    }
+
     stages {
 
         stage('Prepare') {
