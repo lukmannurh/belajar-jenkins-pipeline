@@ -6,6 +6,7 @@ pipeline {
     }
 
     environment {
+        AUTHOR = "Lukman Nur Hakim"
         TEXT_SUCCESS_BUILD = "[#${env.BUILD_NUMBER}] Project Name : ${JOB_NAME} is Success"
         TEXT_FAILURE_BUILD = "[#${env.BUILD_NUMBER}] Project Name : ${JOB_NAME} is Failure"
     }
@@ -14,6 +15,7 @@ pipeline {
 
         stage('Prepare') {
             steps {
+                echo("Author : ${AUTHOR}")
                 echo( "Start Job : ${env.JOB_NAME}")
                 echo( "Start Build : ${env.BUILD_NUMBER}")
                 echo( "Branch Name : ${env.BRANCH_NAME}")
