@@ -11,6 +11,13 @@ pipeline {
     }
 
     stages {
+
+        stage('Prepare') {
+            echo( "Start Job : ${env.JOB_NAME}")
+            echo( "Start Build : ${env.BUILD_NUMBER}")
+            echo( "Branch Name : ${env.BRANCH_NAME}")
+        }
+
         stage('Build') {
             steps {
                 script {
@@ -58,13 +65,11 @@ pipeline {
             script {
                 sendTelegramMessage(env.TEXT_SUCCESS_BUILD)
             }
-            echo 'Build succeeded!'
         }
         failure {
             script {
                 sendTelegramMessage(env.TEXT_FAILURE_BUILD)
             }
-            echo 'Build failed!'
         }
         cleanup {
             echo "Performing cleanup tasks"
