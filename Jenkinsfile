@@ -1,9 +1,9 @@
 pipeline {
     agent {
-                node {
-                    label 'linux || java11 || java17'
-                }
-            } 
+        node {
+            label 'linux || java11 || java17'
+        }
+    }
 
     environment {
         // BUILD_NUMBER_ENV = "${env.BUILD_NUMBER}"
@@ -57,28 +57,36 @@ pipeline {
         }
         success {
             script {
-                withCredentials([string(credentialsId: 'telegram-token', variable: 'TOKEN'), string(credentialsId: 'telegram-chat-id', variable: 'CHAT_ID')]) {
-                    sh '''
-            curl -s -X POST https://api.telegram.org/bot"$TOKEN"/sendMessage -d chat_id="$CHAT_ID" -d text="$TEXT_SUCCESS_BUILD"
-        '''
-                }
+                sendTelegramMessage(env.TEXT_SUCCESS_BUILD)
             }
-
-            echo 'yeay, success'
+            echo 'Build succeeded!'
         }
         failure {
             script {
-                withCredentials([string(credentialsId: 'telegram-token', variable: 'TOKEN'), string(credentialsId: 'telegram-chat-id', variable: 'CHAT_ID')]) {
-                    sh '''
-            curl -s -X POST https://api.telegram.org/bot"$TOKEN"/sendMessage -d chat_id="$CHAT_ID" -d text="$TEXT_FAILURE_BUILD"
-        '''
-                }
+                sendTelegramMessage(env.TEXT_FAILURE_BUILD)
             }
-
-            echo 'Oh no, failure'
+            echo 'Build failed!'
         }
+        cleanup {
+            echo "Performing cleanup tasks"
+        }
+    }
+}
+
+// Definisikan method untuk mengirim pesan Telegram
+def sendTelegramMessage(String message) {
+    withCredentials([
+        string(credentialsId: 'telegram-token', variable: 'TOKEN'),
+        string(credentialsId: 'telegram-chat-id', variable: 'CHAT_ID')
+    ]) {
+        def telegramUrl = "https://api.telegram.org/bot${TOKEN}/sendMessage"
+        def curlCommand = "curl -s -X POST ${telegramUrl} -d chat_id=${CHAT_ID} -d text='${message}'"
+
+        sh(script: curlCommand, returnStatus: true)
+    }
+}
         cleanup {
             echo "Don't care success or error"
         }
-    }
+
 }
