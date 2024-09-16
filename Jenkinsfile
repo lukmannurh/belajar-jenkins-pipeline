@@ -90,9 +90,7 @@ pipeline {
                 }
             }
             steps {
-                echo('Hello Deploy')
-                sleep(5)
-                echo('Finish Deploy')
+                echo("Deploy to ${TARGET_ENV}")
             }
         }
     }
