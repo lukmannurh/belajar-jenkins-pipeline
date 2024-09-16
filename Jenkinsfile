@@ -6,9 +6,17 @@ pipeline {
     }
 
     environment {
-        AUTHOR = "Lukman Nur Hakim"
+        AUTHOR = 'Lukman Nur Hakim'
         TEXT_SUCCESS_BUILD = "[#${env.BUILD_NUMBER}] Project Name : ${JOB_NAME} is Success"
         TEXT_FAILURE_BUILD = "[#${env.BUILD_NUMBER}] Project Name : ${JOB_NAME} is Failure"
+    }
+
+    parameters {
+        string(name: 'NAME', defaultValue: 'GUEST', description: 'What is your name?')
+        text(name: 'DESCRIPTION', defaultValue: '', description: 'Tell me about you?')
+        booleanParam(name: 'DEPLOY', defaultValue: false, description: 'Need to deploy?')
+        choice(name: 'SOSIAL_MEDIA', choices: ['Instagram, Facebook, Twitter'], description: 'Which sosial media?')
+        password(name: 'SECRET', defaultValue: '', description: 'Encrypt key')
     }
 
     options {
@@ -17,17 +25,25 @@ pipeline {
     }
 
     stages {
-
+        stage('Parameter'){
+            steps{
+                echo"Hello ${params.NAME}!"
+                echo"You description is ${params.DESCRIPTION}"
+                echo"Your sosial media is ${params.SOSIAL_MEDIA}"
+                echo"Need to deploy : ${params.DEPLOY}"
+                echo"Your secret is ${params.SECRET}!"
+            }
+        }
         stage('Prepare') {
             environment {
-                APP =  credentials("lukman_rahasia")
+                APP =  credentials('lukman_rahasia')
             }
             steps {
                 echo("Author : ${AUTHOR}")
-                echo( "Start Job : ${env.JOB_NAME}")
-                echo( "Start Build : ${env.BUILD_NUMBER}")
-                echo( "Branch Name : ${env.BRANCH_NAME}")
-                echo( "APP Username : ${APP_USR}")
+                echo("Start Job : ${env.JOB_NAME}")
+                echo("Start Build : ${env.BUILD_NUMBER}")
+                echo("Branch Name : ${env.BRANCH_NAME}")
+                echo("APP Username : ${APP_USR}")
                 sh('echo "APP Password : $APP_PSW" > "rahasia.txt"')
             }
         }
@@ -35,9 +51,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    for (int i = 0; i < 10; i++) {
-                        echo("Script ${i}")
-                    }
+                    printScripts()
                 }
 
                 echo('Hello Build')
@@ -86,7 +100,7 @@ pipeline {
             }
         }
         cleanup {
-            echo "Performing cleanup tasks"
+            echo 'Performing cleanup tasks'
         }
     }
 }
@@ -101,5 +115,11 @@ def sendTelegramMessage(String message) {
         def curlCommand = "curl -s -X POST ${telegramUrl} -d chat_id=${CHAT_ID} -d text='${message}'"
 
         sh(script: curlCommand, returnStatus: true)
+    }
+}
+
+def printScripts() {
+    (0..9).each { i ->
+        echo "Script ${i}"
     }
 }
