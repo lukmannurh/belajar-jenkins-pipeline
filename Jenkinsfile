@@ -85,6 +85,9 @@ pipeline {
                 message "Can we deploy?"
                 ok "Yes, of course"
                 submitter "Lukman, Luke"
+                parameters {
+                    choice(name: "TARGET_ENV", choices: ['DEV', 'QA', 'PROD'], description: "Whict environment")
+                }
             }
             steps {
                 echo('Hello Deploy')
