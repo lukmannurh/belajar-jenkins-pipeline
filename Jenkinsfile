@@ -30,23 +30,26 @@ pipeline {
 
     stages {
         stage('Preparation') {
-            stages{
-                stage("Prepare Java") {
+            failFast true
+            parallel {
+                stage('Prepare Java') {
                     steps {
-                        echo("Prepare Java")
+                        echo('Prepare Java')
+                        sleep(5)
                     }
                 }
-                stage("Prepare Maven") {
+                stage('Prepare Maven') {
                     steps {
-                        echo("Prepare Maven")
+                        echo('Prepare Maven')
+                        sleep(5)
                     }
                 }
             }
         }
 
 
-        stage('Parameter'){
-            steps{
+        stage('Parameter') {
+            steps {
                 echo"Hello ${params.NAME}!"
                 echo"You description is ${params.DESCRIPTION}"
                 echo"Your sosial media is ${params.SOSIAL_MEDIA}"
@@ -98,11 +101,11 @@ pipeline {
 
         stage('Deploy') {
             input {
-                message "Can we deploy?"
-                ok "Yes, of course"
-                submitter "Lukman, Luke"
+                message 'Can we deploy?'
+                ok 'Yes, of course'
+                submitter 'Lukman, Luke'
                 parameters {
-                    choice(name: "TARGET_ENV", choices: ['DEV', 'QA', 'PROD'], description: "Whict environment")
+                    choice(name: 'TARGET_ENV', choices: ['DEV', 'QA', 'PROD'], description: 'Whict environment')
                 }
             }
             steps {
@@ -117,7 +120,7 @@ pipeline {
                 }
             }
             steps {
-                echo("Release it")
+                echo('Release it')
             }
         }
     }
