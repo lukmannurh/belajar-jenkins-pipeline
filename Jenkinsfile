@@ -41,8 +41,24 @@ pipeline {
                         values '32', '64'
                     }
                 }
-                steps {
-                    echo("SETUP ${OS} ${ARC}")
+                excludes {
+                    exclude {
+                        axis {
+                            name 'OS'
+                            values 'mac'
+                        }
+                        axis {
+                            name 'ARC'
+                            values '32'
+                        }
+                    }
+                }
+                stages {
+                    stage('OS SETUP') {
+                        steps {
+                            echo("SETUP ${OS} ${ARC}")
+                        }
+                    }
                 }
             }
         }
