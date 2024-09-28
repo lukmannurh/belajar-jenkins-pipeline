@@ -41,9 +41,9 @@ pipeline {
                         values '32', '64'
                     }
                 }
-            }
-            steps {
-                echo("SETUP ${OS} ${ARC}")
+                steps {
+                    echo("SETUP ${OS} ${ARC}")
+                }
             }
         }
         stage('Preparation') {
