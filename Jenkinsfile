@@ -15,13 +15,13 @@ pipeline {
         string(name: 'NAME', defaultValue: 'GUEST', description: 'What is your name?')
         text(name: 'DESCRIPTION', defaultValue: '', description: 'Tell me about you?')
         booleanParam(name: 'DEPLOY', defaultValue: false, description: 'Need to deploy?')
-        choice(name: 'SOSIAL_MEDIA', choices: ['Instagram', 'Facebook', 'Twitter'], description: 'Which sosial media?')
+        choice(name: 'SOCIAL_MEDIA', choices: ['Instagram', 'Facebook', 'Twitter'], description: 'Which social media?')
         password(name: 'SECRET', defaultValue: '', description: 'Encrypt key')
     }
 
     options {
         disableConcurrentBuilds()
-        timeout(time: 10, unit : 'MINUTES')
+        timeout(time: 10, unit: 'MINUTES')
     }
 
     triggers {
@@ -30,74 +30,37 @@ pipeline {
 
     stages {
         stage('OS Setup') {
-            matrix {
-                axes {
-                    axis {
-                        name 'OS'
-                        values 'linux', 'windows', 'mac'
-                    }
-                    axis {
-                        name 'ARC'
-                        values '32', '64'
-                    }
-                }
-                excludes {
-                    exclude {
-                        axis {
-                            name 'OS'
-                            values 'mac'
-                        }
-                        axis {
-                            name 'ARC'
-                            values '32'
-                        }
-                    }
-                }
-                stages {
-                    stage('OS SETUP') {
-                        steps {
-                            echo("SETUP ${OS} ${ARC}")
-                        }
-                    }
+            steps {
+                script {
+                    osSetup()
                 }
             }
         }
+
         stage('Preparation') {
             steps {
-                parallel(
-                    'Prepare Java': {
-                        echo 'Prepare Java'
-                        sleep 5
-                    },
-                    'Prepare Maven': {
-                        echo 'Prepare Maven'
-                        sleep 5
-                    },
-                    failFast: true
-                )
+                script {
+                    parallelPreparation()
+                }
             }
         }
 
         stage('Parameter') {
             steps {
-                echo"Hello ${params.NAME}!"
-                echo"You description is ${params.DESCRIPTION}"
-                echo"Your sosial media is ${params.SOSIAL_MEDIA}"
-                echo"Need to deploy : ${params.DEPLOY}"
-                echo"Your secret is ${params.SECRET}!"
+                script {
+                    printParameters()
+                }
             }
         }
+
         stage('Prepare') {
             environment {
-                APP =  credentials('lukman_rahasia')
+                APP = credentials('lukman_rahasia')
             }
             steps {
-                echo("Author : ${AUTHOR}")
-                echo("Start Job : ${env.JOB_NAME}")
-                echo("Start Build : ${env.BUILD_NUMBER}")
-                echo("Branch Name : ${env.BRANCH_NAME}")
-                echo("APP Username : ${APP_USR}")
-                sh('echo "APP Password : $APP_PSW" > "rahasia.txt"')
+                script {
+                    printEnvironmentInfo()
+                }
             }
         }
 
@@ -106,51 +69,46 @@ pipeline {
                 script {
                     printScripts()
                 }
-
-                echo('Hello Build')
-                sh('./mvnw clean compile test-compile')
-                echo('Finish Build')
+                echo 'Hello Build'
+                sh './mvnw clean compile test-compile'
+                echo 'Finish Build'
             }
         }
 
         stage('Test') {
             steps {
                 script {
-                    def data = [
-                        'firstName': 'Lukman',
-                        'lastName': 'Nur Hakim'
-                    ]
-                    writeJSON(file: 'data.json', json: data)
+                    writeJSONFile()
                 }
-
-                echo('Hello Test')
-                sh('./mvnw test')
-                echo('Finish Test')
+                echo 'Hello Test'
+                sh './mvnw test'
+                echo 'Finish Test'
             }
         }
 
         stage('Deploy') {
+            when {
+                expression { params.DEPLOY }
+            }
             input {
                 message 'Can we deploy?'
                 ok 'Yes, of course'
                 submitter 'Lukman, Luke'
                 parameters {
-                    choice(name: 'TARGET_ENV', choices: ['DEV', 'QA', 'PROD'], description: 'Whict environment')
+                    choice(name: 'TARGET_ENV', choices: ['DEV', 'QA', 'PROD'], description: 'Which environment')
                 }
             }
             steps {
-                echo("Deploy to ${TARGET_ENV}")
+                echo "Deploy to ${TARGET_ENV}"
             }
         }
 
         stage('Release') {
             when {
-                expression {
-                    return params.DEPLOY
-                }
+                expression { params.DEPLOY }
             }
             steps {
-                echo('Release it')
+                echo 'Release it'
             }
         }
     }
@@ -175,7 +133,62 @@ pipeline {
     }
 }
 
-// Definisikan method untuk mengirim pesan Telegram
+// Helper functions
+def osSetup() {
+    def osConfigurations = [
+        'linux': ['32', '64'],
+        'windows': ['32', '64'],
+        'mac': ['64']
+    ]
+
+    osConfigurations.each { os, arcs ->
+        arcs.each { arc ->
+            if (!(os == 'mac' && arc == '32')) {
+                echo "SETUP ${os} ${arc}"
+                // Add your setup logic here
+            }
+        }
+    }
+}
+
+def parallelPreparation() {
+    parallel(
+        'Prepare Java': {
+            echo 'Prepare Java'
+            sleep(5)
+        },
+        'Prepare Maven': {
+            echo 'Prepare Maven'
+            sleep(5)
+        }
+    )
+}
+
+def printParameters() {
+    echo "Hello ${params.NAME}!"
+    echo "Your description is ${params.DESCRIPTION}"
+    echo "Your social media is ${params.SOCIAL_MEDIA}"
+    echo "Need to deploy: ${params.DEPLOY}"
+    echo "Your secret is ${params.SECRET}!"
+}
+
+def printEnvironmentInfo() {
+    echo "Author: ${AUTHOR}"
+    echo "Start Job: ${env.JOB_NAME}"
+    echo "Start Build: ${env.BUILD_NUMBER}"
+    echo "Branch Name: ${env.BRANCH_NAME}"
+    echo "APP Username: ${APP_USR}"
+    sh 'echo "APP Password: $APP_PSW" > "rahasia.txt"'
+}
+
+def writeJSONFile() {
+    def data = [
+        'firstName': 'Lukman',
+        'lastName': 'Nur Hakim'
+    ]
+    writeJSON(file: 'data.json', json: data)
+}
+
 def sendTelegramMessage(String message) {
     withCredentials([
         string(credentialsId: 'telegram-token', variable: 'TOKEN'),
@@ -183,7 +196,6 @@ def sendTelegramMessage(String message) {
     ]) {
         def telegramUrl = "https://api.telegram.org/bot${TOKEN}/sendMessage"
         def curlCommand = "curl -s -X POST ${telegramUrl} -d chat_id=${CHAT_ID} -d text='${message}'"
-
         sh(script: curlCommand, returnStatus: true)
     }
 }
